@@ -21,6 +21,12 @@ const tmdbRegex = new RegExp(/tmdb:\/\/([0-9]+)/);
 const tvdbRegex = new RegExp(/tvdb:\/\/([0-9]+)/);
 const tmdbShowRegex = new RegExp(/themoviedb:\/\/([0-9]+)/);
 const plexRegex = new RegExp(/plex:\/\//);
+
+const xbmcnfoTmdbRegex = new RegExp(/xbmcnfo:\/\/([0-9]+)/);
+const xbmcnfoImdbRegex = new RegExp(/xbmcnfo:\/\/(tt[0-9]+)/);
+const plexnfoTmdbRegex = new RegExp(/plexnfo:\/\/([0-9]+)/);
+const plexnfoImdbRegex = new RegExp(/plexnfo:\/\/(tt[0-9]+)/);
+
 // Hama agent uses ASS naming, see details here:
 // https://github.com/ZeroQI/Absolute-Series-Scanner/blob/master/README.md#forcing-the-movieseries-id
 const hamaTvdbRegex = new RegExp(/hama:\/\/tvdb[0-9]?-([0-9]+)/);
@@ -486,6 +492,38 @@ class PlexScanner
             mediaIds.imdbId = result.imdbId;
           }
         }
+      }
+      //Check for xbmcnfo (TMDB)
+    } else if (plexitem.guid.match(xbmcnfoTmdbRegex)) {
+      const matchedtmdb = plexitem.guid.match(xbmcnfoTmdbRegex);
+      if (matchedtmdb) {
+        mediaIds.tmdbId = Number(matchedtmdb[1]);
+      }
+      // Check for xbmcnfo (IMDb)
+    } else if (plexitem.guid.match(xbmcnfoImdbRegex)) {
+      const imdbMatch = plexitem.guid.match(xbmcnfoImdbRegex);
+      if (imdbMatch) {
+        mediaIds.imdbId = imdbMatch[1];
+        const tmdbMedia = await this.tmdb.getMediaByImdbId({
+          imdbId: mediaIds.imdbId,
+        });
+        mediaIds.tmdbId = tmdbMedia.id;
+      }
+      // Check for plexnfo (TMDB)
+    } else if (plexitem.guid.match(plexnfoTmdbRegex)) {
+      const matchedtmdb = plexitem.guid.match(plexnfoTmdbRegex);
+      if (matchedtmdb) {
+        mediaIds.tmdbId = Number(matchedtmdb[1]);
+      }
+      // Check for plexnfo (IMDb)
+    } else if (plexitem.guid.match(plexnfoImdbRegex)) {
+      const imdbMatch = plexitem.guid.match(plexnfoImdbRegex);
+      if (imdbMatch) {
+        mediaIds.imdbId = imdbMatch[1];
+        const tmdbMedia = await this.tmdb.getMediaByImdbId({
+          imdbId: mediaIds.imdbId,
+        });
+        mediaIds.tmdbId = tmdbMedia.id;
       }
     }
 
